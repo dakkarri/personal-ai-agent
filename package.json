@@ -1,0 +1,10 @@
+{
+  "name": "personal-ai-agent",
+  "version": "0.1.0",
+  "description": "Personal multi-task AI agent prototype: files, search, notes and tasks with persistent memory and an approval gate (Arabic CLI)",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "license": "MIT"
+}
