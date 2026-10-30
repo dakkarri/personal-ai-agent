@@ -1,10 +1,13 @@
 {
   "name": "personal-ai-agent",
-  "version": "0.1.0",
-  "description": "Personal multi-task AI agent prototype: files, search, notes and tasks with persistent memory and an approval gate (Arabic CLI)",
+  "version": "0.2.0",
+  "description": "Personal multi-task AI agent prototype: local web UI + CLI, compound requests with step trace, files, search, notes and tasks with persistent memory and an approval gate (Arabic)",
   "main": "agent.js",
   "scripts": {
-    "start": "node agent.js"
+    "start": "node server.js",
+    "web": "node server.js",
+    "cli": "node agent.js",
+    "test": "node test/run-tests.js"
   },
   "license": "MIT"
 }
