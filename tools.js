@@ -5,8 +5,13 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
-const WORKSPACE = path.join(ROOT, 'workspace');   // الملفات اللي الـ agent يقدر يتعامل معاها
-const DATA_DIR = path.join(ROOT, 'data');          // الذاكرة الدائمة
+// المسارات الافتراضية جنب المشروع، وبتتغير بمتغيرات بيئة (بيستخدمها الاختبار بس)
+const WORKSPACE = process.env.AGENT_WORKSPACE_DIR
+    ? path.resolve(process.env.AGENT_WORKSPACE_DIR)
+    : path.join(ROOT, 'workspace');                     // الملفات اللي الـ agent يقدر يتعامل معاها
+const DATA_DIR = process.env.AGENT_DATA_DIR
+    ? path.resolve(process.env.AGENT_DATA_DIR)
+    : path.join(ROOT, 'data');                          // الذاكرة الدائمة
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const NOTES_FILE = path.join(DATA_DIR, 'notes.md');
 
@@ -14,12 +19,12 @@ for (const dir of [WORKSPACE, DATA_DIR]) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 if (!fs.existsSync(TASKS_FILE)) fs.writeFileSync(TASKS_FILE, '[]');
-if (!fs.existsSync(NOTES_FILE)) fs.writeFileSync(NOTES_FILE, '# الملاحظات\n');
+if (!fs.existsSync(NOTES_FILE)) fs.writeFileSync(NOTES_FILE, '# Notes — الملاحظات — Notlar\n');
 
-// حماية بسيطة: ممنوع الخروج برة مجلد workspace
+// حماية: ممنوع الخروج بره مجلد workspace
 function safePath(p) {
-    const full = path.resolve(WORKSPACE, p);
-    if (!full.startsWith(path.resolve(WORKSPACE))) {
+    const full = path.resolve(WORKSPACE, String(p));
+    if (full !== path.resolve(WORKSPACE) && !full.startsWith(path.resolve(WORKSPACE) + path.sep)) {
         throw new Error('المسار ده بره مجلد العمل المسموح بيه');
     }
     return full;
@@ -39,7 +44,7 @@ const tools = [
         description: 'عرض كل الملفات الموجودة في مجلد العمل',
         parameters: { type: 'object', properties: {} },
         execute() {
-            const files = fs.readdirSync(WORKSPACE);
+            const files = fs.readdirSync(WORKSPACE).filter(f => fs.statSync(path.join(WORKSPACE, f)).isFile());
             return files.length ? files.join('\n') : '(مجلد العمل فاضي)';
         }
     },
@@ -53,7 +58,7 @@ const tools = [
         },
         execute({ filename }) {
             const full = safePath(filename);
-            if (!fs.existsSync(full)) return `مفيش ملف بالاسم ده: ${filename}`;
+            if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return `مفيش ملف بالاسم ده: ${filename}`;
             return fs.readFileSync(full, 'utf8');
         }
     },
@@ -156,4 +161,4 @@ const tools = [
     }
 ];
 
-module.exports = { tools, WORKSPACE, DATA_DIR };
+module.exports = { tools, WORKSPACE, DATA_DIR, TASKS_FILE, NOTES_FILE, safePath };
